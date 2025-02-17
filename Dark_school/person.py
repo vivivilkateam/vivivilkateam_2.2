@@ -13,16 +13,14 @@ class Units:
 
 
 class game_player(Units):
-    def __init__(self, world, start_x, texture_path, speed, lerp_speed, world_width): #Добавили world_width
+    def __init__(self, world, start_x, texture_path, speed, lerp_speed, player_width): # Добавили player_width
         super().__init__(0, 0, speed)
         self.world = world
-        self.x = start_x  # дробная координата
-        self.target_x = start_x # целевая позиция
+        self.x = start_x
         self.texture_path = texture_path
         self.dx = 0
         self.lerp_speed = lerp_speed
-        self.world_width = world_width # Добавили ширину мира
-
+        self.player_width = player_width # Сохраняем ширину персонажа
 
     def move_left(self):
         self.dx = -1
@@ -34,11 +32,10 @@ class game_player(Units):
         self.dx = 0
 
     def update(self):
-        self.target_x += self.dx * self.speed
-        # Изменили ограничение на world_width
-        self.target_x = max(0, min(self.target_x, self.world_width))
-        self.x += (self.target_x - self.x) * self.lerp_speed
-
+        self.x += self.dx * self.speed * self.lerp_speed
+        # Ограничиваем персонажа, чтобы он не выходил за границы мира
+        # Учитываем ширину персонажа!
+        self.x = max(0, min(self.x, self.world.length - (self.player_width/self.world.TILE_SIZE)))
 
     def __str__(self):
         return f'Позиция на линии: {self.x}'
