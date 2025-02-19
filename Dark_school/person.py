@@ -13,14 +13,16 @@ class Units:
 
 
 class game_player(Units):
-    def __init__(self, world, start_x, texture_path, speed, lerp_speed, player_width): # Добавили player_width
+    def __init__(self, world, start_x, texture_path, speed, lerp_speed, player_width, attack_range): # Добавили attack_range
         super().__init__(0, 0, speed)
         self.world = world
         self.x = start_x
         self.texture_path = texture_path
         self.dx = 0
         self.lerp_speed = lerp_speed
-        self.player_width = player_width # Сохраняем ширину персонажа
+        self.player_width = player_width
+        self.attack_range = attack_range # Радиус атаки
+        self.is_attacking = False # Флаг, что персонаж атакует
 
     def move_left(self):
         self.dx = -1
@@ -31,11 +33,14 @@ class game_player(Units):
     def stop(self):
         self.dx = 0
 
+    def attack(self):
+        self.is_attacking = True
+
     def update(self):
         self.x += self.dx * self.speed * self.lerp_speed
         # Ограничиваем персонажа, чтобы он не выходил за границы мира
-        # Учитываем ширину персонажа!
         self.x = max(0, min(self.x, self.world.length - (self.player_width/self.world.TILE_SIZE)))
+        self.is_attacking = False # Сбрасываем флаг атаки после каждого обновления
 
     def __str__(self):
         return f'Позиция на линии: {self.x}'
