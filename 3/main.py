@@ -85,7 +85,8 @@ def load_textures():
                   '../img/tank_left_player.png')
     texture.load('tank_right_player',
                   '../img/tank_right_player.png')
-
+    # texture.load('player',
+    #               '../Dark_school/player.png.png')
 
     texture.load(world.BRICK, '../img/brick.png')
     texture.load(world.WATER, '../img/water.png')
@@ -118,6 +119,8 @@ def load_textures():
                   '../img/missile_left.png')
     texture.load('missile_right',
                   '../img/missile_right.png')
+
+
 
 
 

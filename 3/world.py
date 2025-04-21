@@ -51,7 +51,7 @@ def get_block(row, col):
     return AIR
 
 
-def create_map(rows=20, cols=20):
+def create_map(rows=200, cols=200):
     global _map
     _map = []
     for i in range(rows):
