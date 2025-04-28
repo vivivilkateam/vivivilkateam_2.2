@@ -278,7 +278,8 @@ class Tank(Unit):
         elif 25 > self._hp > 0:
             print('0')
 
-    def set_target(self, target,  target2):
+
+    def set_target(self, target, target2):
         self._target = target
         self._target = target2
 

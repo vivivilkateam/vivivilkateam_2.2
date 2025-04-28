@@ -8,7 +8,9 @@ _tanks = []
 _canvas = None
 id_screen_text = 0
 enemy_colvo = 100
+
 enemy = None
+
 def initialize(canv):
     global _canvas, id_screen_text
     _canvas = canv
@@ -16,6 +18,7 @@ def initialize(canv):
     enemy = None
     for i in range(enemy_colvo//2):
         enemy = spawn(True).set_target(player, enemy)
+
         enemy = spawn(True).set_target(enemy,player)
 
 
