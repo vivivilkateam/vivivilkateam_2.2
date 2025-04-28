@@ -228,7 +228,7 @@ class Unit:
 class Tank(Unit):
     def __init__(self, canvas, row, col, bot=True):
         super().__init__(canvas, col * world.BLOCK_SIZE, row * world.BLOCK_SIZE, 2, 8,
-                         bot, 'tank_up', has_hp_bar=True)
+                         bot, 'player', has_hp_bar=True)
         self._tank_destroy = 'tank_destroy'  # Добавляем атрибут _tank_destroy
         self._max_ammo = 10 # Максимальное количество патронов
         self._ammo = self._max_ammo # Текущее количество патронов
@@ -249,11 +249,11 @@ class Tank(Unit):
             self._25 = '25hp'
             self._0 = '0hp'
         else:
-            self._forward_image = 'tank_up_player'
-            self._backward_image = 'tank_down_player'
-            self._left_image = 'tank_left_player'
-            self._right_image = 'tank_right_player'
-            self._tank_destroy = 'tank_destroy'
+            self._forward_image = 'player'
+            self._backward_image = 'player'
+            self._left_image = 'player'
+            self._right_image = 'player'
+            self._tank_destroy = 'player'
             self._100 = '100hp'
             self._75 = '75hp'
             self._50 = '50hp'
@@ -278,8 +278,9 @@ class Tank(Unit):
         elif 25 > self._hp > 0:
             print('0')
 
-    def set_target(self, target):
+    def set_target(self, target,  target2):
         self._target = target
+        self._target = target2
 
     # Добавим методы для получения информации о патронах и топливе
     def get_ammo(self):

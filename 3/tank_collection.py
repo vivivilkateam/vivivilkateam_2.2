@@ -7,15 +7,17 @@ import world
 _tanks = []
 _canvas = None
 id_screen_text = 0
-enemy_colvo = 10
-
+enemy_colvo = 100
+enemy = None
 def initialize(canv):
     global _canvas, id_screen_text
     _canvas = canv
     player = spawn(False)
+    enemy = None
     for i in range(enemy_colvo//2):
-        enemy = spawn(True).set_target(player)
-        enemy2 = spawn(True).set_target(enemy)
+        enemy = spawn(True).set_target(player, enemy)
+        enemy = spawn(True).set_target(enemy,player)
+
 
 
     id_screen_text = _canvas.create_text(10, 10,

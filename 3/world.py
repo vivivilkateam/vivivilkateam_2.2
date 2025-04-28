@@ -51,7 +51,7 @@ def get_block(row, col):
     return AIR
 
 
-def create_map(rows=200, cols=200):
+def create_map(rows=100, cols=100):
     global _map
     _map = []
     for i in range(rows):
@@ -93,11 +93,11 @@ def get_col(x):
 
 
 def get_rows():
-    return len(_map)
+    return len(_map[0])
 
 
 def get_cols():
-    return len(_map[0])
+    return len(_map[1])
 
 
 def get_widht():
@@ -111,7 +111,7 @@ def get_height():
 def initialize(canv):
     global _canvas
     _canvas = canv
-    create_map(20, 20)
+    create_map(100, 100)
     # load_map('../map/1.tmap')
     # load_map('../map/2.tmap')
     # load_map('../map/3.tmap')
