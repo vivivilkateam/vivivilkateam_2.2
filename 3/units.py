@@ -27,6 +27,48 @@ class Unit:
 
         if self._has_hp_bar:
             self._create_hp_bar()
+        self._dx = 0  # Текущее направление по X (-1, 0, 1)
+        self._dy = 0  # Текущее направление по Y (-1, 0, 1)
+        self._moving = False  # Движется ли танк в данный момент
+
+    def move_left(self):
+        self._vx = -1
+        self._vy = 0
+        self._moving = True
+        self._dx = -1
+        self._canvas.itemconfig(self._id,
+                                image=skin.get(self._left_image))
+
+    def move_right(self):
+        self._vx = 1
+        self._vy = 0
+        self._moving = True
+        self._dx = 1
+        self._canvas.itemconfig(self._id,
+                                image=skin.get(self._right_image))
+
+    def move_up(self):
+        self._vx = 0
+        self._vy = -1
+        self._moving = True
+        self._dy = -1
+        self._canvas.itemconfig(self._id,
+                                image=skin.get(self._forward_image))
+
+    def move_down(self):
+        self._vx = 0
+        self._vy = 1
+        self._moving = True
+        self._dy = 1
+        self._canvas.itemconfig(self._id,
+                                image=skin.get(self._backward_image))
+
+    def stop(self):
+        self._vx = 0
+        self._vy = 0
+        self._moving = False
+        self._dx = 0
+        self._dy = 0
 
     def damage(self, value):
         self._hp -= value
@@ -149,10 +191,30 @@ class Unit:
     def update(self):
         if self._bot:
             self._AI()
-        self._dx = self._vx * self._speed
-        self._dy = self._vy * self._speed
-        self._x += self._dx
-        self._y += self._dy
+
+        # Плавное движение (интерполяция)
+        if self._moving:
+            target_x = self._x + self._dx * self._speed
+            target_y = self._y + self._dy * self._speed
+
+            # Нормализация скорости
+            distance = math.sqrt(self._dx**2 + self._dy**2) # Вычисляем расстояние
+
+            if distance > 0: # Если танк движется
+                normalized_dx = self._dx / distance # Нормализуем dx
+                normalized_dy = self._dy / distance # Нормализуем dy
+
+                target_x = self._x + normalized_dx * self._speed # Используем нормализованные значения
+                target_y = self._y + normalized_dy * self._speed
+
+            # Ограничиваем перемещение, чтобы не выходить за границы карты
+            target_x = max(0, min(target_x, world.get_widht() - world.BLOCK_SIZE))
+            target_y = max(0, min(target_y, world.get_height() - world.BLOCK_SIZE))
+
+            # Применяем интерполяцию (LERP)
+            self._x = self._x + (target_x - self._x) * 0.1  # 0.1 - скорость LERP
+            self._y = self._y + (target_y - self._y) * 0.1
+        # Обновляем _hitbox после перемещения
         self._update_hitbox()
         self._check_map_collision()
         self._repaint()

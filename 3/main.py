@@ -56,6 +56,58 @@ def key_press(event):
         return
 
 
+def move_left(event):
+    pl1.move_left()
+
+def move_right(event):
+    pl1.move_right()
+
+def move_up(event):
+    pl1.move_up()
+
+def move_down(event):
+    pl1.move_down()
+
+def stop_move(event):
+    pl1.stop()
+
+def stop_move_y(event):
+    pl1.stop()
+
+def attack(event):
+    if pl1.is_attacking:
+        pl1.stop_attack()
+    else:
+        pl1.start_attack()
+
+def key_press(event):  # Добавим обработчик нажатий клавиш
+    player = tank_collection.get_player()
+
+    if player.is_destroyed():
+        return
+
+    # Движение (обработка одновременного нажатия)
+    if event.keycode == KEY_W:
+        player.move_up()
+    elif event.keycode == KEY_S:
+        player.move_down()
+    if event.keycode == KEY_A:
+        player.move_left()
+    elif event.keycode == KEY_D:
+        player.move_right()
+
+    elif event.keycode == 32:
+        player.fire()
+
+def key_release(event): # Добавим обработчик отпускания клавиш
+    player = tank_collection.get_player()
+
+    if event.keycode == KEY_W or event.keycode == KEY_S:
+        player.stop()
+    elif event.keycode == KEY_A or event.keycode == KEY_D:
+        player.stop()
+# ...
+
 def load_textures():
 
     texture.load('tank_up', '../img/tank_up.png')
@@ -147,6 +199,26 @@ w.bind('<KeyPress>', key_press)
 update()
 
 
+# Привязка клавиш
+w.bind("<KeyPress>", key_press) # Меняем привязку, чтобы обрабатывать все нажатия в key_press
+w.bind("<KeyRelease>", key_release) # Добавляем обработку отпускания клавиш
 
-
+# Оставляем старые привязки, чтобы ничего не сломать.  Их можно будет удалить.
+w.bind("<Left>", move_left)
+w.bind("<Right>", move_right)
+w.bind("<a>", move_left)
+w.bind("<d>", move_right)
+w.bind("<w>", move_up)
+w.bind("<s>", move_down)
+w.bind("<Up>", move_up)
+w.bind("<Down>", move_down)
+w.bind("<space>", attack)
+w.bind("<KeyRelease-Left>", stop_move)
+w.bind("<KeyRelease-Right>", stop_move)
+w.bind("<KeyRelease-a>", stop_move)
+w.bind("<KeyRelease-d>", stop_move)
+w.bind("<KeyRelease-w>", stop_move_y)
+w.bind("<KeyRelease-s>", stop_move_y)
+w.bind("<KeyRelease-Up>", stop_move_y)
+w.bind("<KeyRelease-Down>", stop_move_y)
 w.mainloop()
