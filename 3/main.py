@@ -56,30 +56,6 @@ def key_press(event):
         return
 
 
-def move_left(event):
-    pl1.move_left()
-
-def move_right(event):
-    pl1.move_right()
-
-def move_up(event):
-    pl1.move_up()
-
-def move_down(event):
-    pl1.move_down()
-
-def stop_move(event):
-    pl1.stop()
-
-def stop_move_y(event):
-    pl1.stop()
-
-def attack(event):
-    if pl1.is_attacking:
-        pl1.stop_attack()
-    else:
-        pl1.start_attack()
-
 def key_press(event):  # Добавим обработчик нажатий клавиш
     player = tank_collection.get_player()
 
@@ -204,21 +180,5 @@ w.bind("<KeyPress>", key_press) # Меняем привязку, чтобы об
 w.bind("<KeyRelease>", key_release) # Добавляем обработку отпускания клавиш
 
 # Оставляем старые привязки, чтобы ничего не сломать.  Их можно будет удалить.
-w.bind("<Left>", move_left)
-w.bind("<Right>", move_right)
-w.bind("<a>", move_left)
-w.bind("<d>", move_right)
-w.bind("<w>", move_up)
-w.bind("<s>", move_down)
-w.bind("<Up>", move_up)
-w.bind("<Down>", move_down)
-w.bind("<space>", attack)
-w.bind("<KeyRelease-Left>", stop_move)
-w.bind("<KeyRelease-Right>", stop_move)
-w.bind("<KeyRelease-a>", stop_move)
-w.bind("<KeyRelease-d>", stop_move)
-w.bind("<KeyRelease-w>", stop_move_y)
-w.bind("<KeyRelease-s>", stop_move_y)
-w.bind("<KeyRelease-Up>", stop_move_y)
-w.bind("<KeyRelease-Down>", stop_move_y)
+
 w.mainloop()

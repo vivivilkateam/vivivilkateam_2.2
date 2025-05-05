@@ -4,7 +4,7 @@ import texture as skin
 from tkinter import NW
 from random import randint
 import missile_collection
-
+import math
 class Unit:
     def __init__(self, canvas, x, y, speed, padding, bot, default_image, has_hp_bar=False):
         self._destroyed = False
@@ -289,7 +289,7 @@ class Unit:
 
 class Tank(Unit):
     def __init__(self, canvas, row, col, bot=True):
-        super().__init__(canvas, col * world.BLOCK_SIZE, row * world.BLOCK_SIZE, 2, 8,
+        super().__init__(canvas, col * world.BLOCK_SIZE, row * world.BLOCK_SIZE, 100, 8,
                          bot, 'player', has_hp_bar=True)
         self._tank_destroy = 'tank_destroy'  # Добавляем атрибут _tank_destroy
         self._max_ammo = 10 # Максимальное количество патронов
