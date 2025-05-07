@@ -1,6 +1,6 @@
 from random import randint
-from missile_collection import check_missiles_collision
-from units import Tank
+import missile_collection
+import units
 from tkinter import NW
 import world
 
@@ -15,11 +15,11 @@ def initialize(canv):
     global _canvas, id_screen_text
     _canvas = canv
     player = spawn(False)
-    enemy = None
-    for i in range(enemy_colvo//2):
-        enemy = spawn(True).set_target(player, enemy)
 
-        enemy = spawn(True).set_target(enemy,player)
+    for i in range(enemy_colvo):
+        enemy = spawn(True).set_target(player)
+
+
 
 
 
@@ -28,7 +28,6 @@ def initialize(canv):
                                          font=('TkDefualFont', 20),
                                          fill='black',
                                          anchor=NW)
-
 
 def _get_screen_text():
     player = get_player()
@@ -40,9 +39,11 @@ def _get_screen_text():
     ammo = player.get_ammo() # Получаем количество патронов
     fuel = player.get_fuel() # Получаем количество топлива
     enemies = len(_tanks) - 1 # Получаем количество врагов
+    level = player._level
+    xp = player._xp
+    xp_to_level_up = player._xp_to_level_up
 
-    return f'Враги: {enemies}, Патроны: {ammo}, Топливо: {fuel}' # Формируем строку
-
+    return f'Враги: {enemies}, Патроны: {ammo}, Топливо: {fuel}, Level: {level}, XP: {xp}/{xp_to_level_up}' # Формируем строку
 
 def _update_screen():
     _canvas.itemconfig(id_screen_text, text=_get_screen_text())
@@ -63,7 +64,7 @@ def update():
         else:
             _tanks[i].update()
             check_collision(_tanks[i])
-            check_missiles_collision(_tanks[i])
+            missile_collection.check_missiles_collision(_tanks[i])
 
 
 def check_collision(tank):
@@ -78,7 +79,7 @@ def check_collision(tank):
 def spawn_enemy():
     pos_x = randint(200, world.WIDTH - 200)
     pos_y = randint(200, world.HEIGHT - 200)
-    t = Tank(_canvas, x=pos_x, y=pos_y, speed=1)
+    t = units.Tank(_canvas, x=pos_x, y=pos_y, speed=1)
 
     t.set_target(get_player())
     _tanks.append(t)
@@ -95,7 +96,7 @@ def spawn(is_bot=True):
         if world.get_block(row, col) != world.GROUND:
             continue
 
-        t = Tank(_canvas, row,
+        t = units.Tank(_canvas, row,
                  col, bot=is_bot)
 
         if not check_collision(t):

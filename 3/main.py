@@ -27,33 +27,33 @@ def update():
     world.update_map()
     w.after(1000 // FPS, update)
 
-
-def key_press(event):
-    player = tank_collection.get_player()
-
-    if player.is_destroyed():
-        return
-
-    if event.keycode == KEY_W:
-        player.forward()
-    elif event.keycode == KEY_S:
-        player.backward()
-    elif event.keycode == KEY_A:
-        player.left()
-    elif event.keycode == KEY_D:
-        player.right()
-    elif event.keycode == KEY_UP:
-        world.move_camera(0, -5)
-    elif event.keycode == KEY_DOWN:
-        world.move_camera(0, 5)
-    elif event.keycode == KEY_LEFT:
-        world.move_camera(-5, 0)
-    elif event.keycode == KEY_RIGHT:
-        world.move_camera(5, 0)
-    elif event.keycode == 32:
-        player.fire()
-    if player.is_destroyed():
-        return
+#
+# def key_press(event):
+#     player = tank_collection.get_player()
+#
+#     if player.is_destroyed():
+#         return
+#
+#     if event.keycode == KEY_W:
+#         player.forward()
+#     elif event.keycode == KEY_S:
+#         player.backward()
+#     elif event.keycode == KEY_A:
+#         player.left()
+#     elif event.keycode == KEY_D:
+#         player.right()
+#     elif event.keycode == KEY_UP:
+#         world.move_camera(0, -5)
+#     elif event.keycode == KEY_DOWN:
+#         world.move_camera(0, 5)
+#     elif event.keycode == KEY_LEFT:
+#         world.move_camera(-5, 0)
+#     elif event.keycode == KEY_RIGHT:
+#         world.move_camera(5, 0)
+#     elif event.keycode == 32:
+#         player.fire()
+#     if player.is_destroyed():
+#         return
 
 
 def key_press(event):  # Добавим обработчик нажатий клавиш
@@ -64,25 +64,25 @@ def key_press(event):  # Добавим обработчик нажатий кл
 
     # Движение (обработка одновременного нажатия)
     if event.keycode == KEY_W:
-        player.move_up()
+        player.forward()
     elif event.keycode == KEY_S:
-        player.move_down()
+        player.backward()
     if event.keycode == KEY_A:
-        player.move_left()
+        player.left()
     elif event.keycode == KEY_D:
-        player.move_right()
+        player.right()
 
     elif event.keycode == 32:
         player.fire()
 
-def key_release(event): # Добавим обработчик отпускания клавиш
-    player = tank_collection.get_player()
-
-    if event.keycode == KEY_W or event.keycode == KEY_S:
-        player.stop()
-    elif event.keycode == KEY_A or event.keycode == KEY_D:
-        player.stop()
-# ...
+# def key_release(event): # Добавим обработчик отпускания клавиш
+#     player = tank_collection.get_player()
+#
+#     if event.keycode == KEY_W or event.keycode == KEY_S:
+#         player.stop()
+#     elif event.keycode == KEY_A or event.keycode == KEY_D:
+#         player.stop()
+# # ...
 
 def load_textures():
 
@@ -177,7 +177,7 @@ update()
 
 # Привязка клавиш
 w.bind("<KeyPress>", key_press) # Меняем привязку, чтобы обрабатывать все нажатия в key_press
-w.bind("<KeyRelease>", key_release) # Добавляем обработку отпускания клавиш
+# w.bind("<KeyRelease>", key_release) # Добавляем обработку отпускания клавиш
 
 # Оставляем старые привязки, чтобы ничего не сломать.  Их можно будет удалить.
 

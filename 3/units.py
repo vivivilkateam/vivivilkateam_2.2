@@ -4,6 +4,7 @@ import texture as skin
 from tkinter import NW
 from random import randint
 import missile_collection
+import tank_collection
 import math
 class Unit:
     def __init__(self, canvas, x, y, speed, padding, bot, default_image, has_hp_bar=False):
@@ -31,44 +32,44 @@ class Unit:
         self._dy = 0  # Текущее направление по Y (-1, 0, 1)
         self._moving = False  # Движется ли танк в данный момент
 
-    def move_left(self):
-        self._vx = -1
-        self._vy = 0
-        self._moving = True
-        self._dx = -1
-        self._canvas.itemconfig(self._id,
-                                image=skin.get(self._left_image))
-
-    def move_right(self):
-        self._vx = 1
-        self._vy = 0
-        self._moving = True
-        self._dx = 1
-        self._canvas.itemconfig(self._id,
-                                image=skin.get(self._right_image))
-
-    def move_up(self):
-        self._vx = 0
-        self._vy = -1
-        self._moving = True
-        self._dy = -1
-        self._canvas.itemconfig(self._id,
-                                image=skin.get(self._forward_image))
-
-    def move_down(self):
-        self._vx = 0
-        self._vy = 1
-        self._moving = True
-        self._dy = 1
-        self._canvas.itemconfig(self._id,
-                                image=skin.get(self._backward_image))
-
-    def stop(self):
-        self._vx = 0
-        self._vy = 0
-        self._moving = False
-        self._dx = 0
-        self._dy = 0
+    # def move_left(self):
+    #     self._vx = -1
+    #     self._vy = 0
+    #     self._moving = True
+    #     self._dx = -1
+    #     self._canvas.itemconfig(self._id,
+    #                             image=skin.get(self._left_image))
+    #
+    # def move_right(self):
+    #     self._vx = 1
+    #     self._vy = 0
+    #     self._moving = True
+    #     self._dx = 1
+    #     self._canvas.itemconfig(self._id,
+    #                             image=skin.get(self._right_image))
+    #
+    # def move_up(self):
+    #     self._vx = 0
+    #     self._vy = -1
+    #     self._moving = True
+    #     self._dy = -1
+    #     self._canvas.itemconfig(self._id,
+    #                             image=skin.get(self._forward_image))
+    #
+    # def move_down(self):
+    #     self._vx = 0
+    #     self._vy = 1
+    #     self._moving = True
+    #     self._dy = 1
+    #     self._canvas.itemconfig(self._id,
+    #                             image=skin.get(self._backward_image))
+    #
+    # def stop(self):
+    #     self._vx = 0
+    #     self._vy = 0
+    #     self._moving = False
+    #     self._dx = 0
+    #     self._dy = 0
 
     def damage(self, value):
         self._hp -= value
@@ -108,15 +109,20 @@ class Unit:
 
     def destroy(self):
         self._destroyed = True
-        self.stop()
         self._speed = 0
-        if isinstance(self, Tank):  # Проверяем, является ли юнит танком
+        if isinstance(self, Tank):
             self._canvas.itemconfig(self._id, image=skin.get(self._tank_destroy))
-        else:  # Если юнит не танк (например, ракета)
-            self._canvas.delete(self._id)  # Просто удаляем изображение
+        else:
+            self._canvas.delete(self._id)
 
         if self._hp_bar_id:
             self._canvas.delete(self._hp_bar_id)
+        # Добавляем начисление опыта
+        if self.is_bot():
+            player = tank_collection.get_player()
+            if player:
+                player.gain_xp(50)
+  # Например, 50 опыта за убийство врага
 
     def _repaint(self):  # Переопределяем, чтобы обновлять полоску HP
         screen_x = world.get_screen_x(self._x)
@@ -191,30 +197,10 @@ class Unit:
     def update(self):
         if self._bot:
             self._AI()
-
-        # Плавное движение (интерполяция)
-        if self._moving:
-            target_x = self._x + self._dx * self._speed
-            target_y = self._y + self._dy * self._speed
-
-            # Нормализация скорости
-            distance = math.sqrt(self._dx**2 + self._dy**2) # Вычисляем расстояние
-
-            if distance > 0: # Если танк движется
-                normalized_dx = self._dx / distance # Нормализуем dx
-                normalized_dy = self._dy / distance # Нормализуем dy
-
-                target_x = self._x + normalized_dx * self._speed # Используем нормализованные значения
-                target_y = self._y + normalized_dy * self._speed
-
-            # Ограничиваем перемещение, чтобы не выходить за границы карты
-            target_x = max(0, min(target_x, world.get_widht() - world.BLOCK_SIZE))
-            target_y = max(0, min(target_y, world.get_height() - world.BLOCK_SIZE))
-
-            # Применяем интерполяцию (LERP)
-            self._x = self._x + (target_x - self._x) * 0.1  # 0.1 - скорость LERP
-            self._y = self._y + (target_y - self._y) * 0.1
-        # Обновляем _hitbox после перемещения
+        self._dx = self._vx * self._speed
+        self._dy = self._vy * self._speed
+        self._x += self._dx
+        self._y += self._dy
         self._update_hitbox()
         self._check_map_collision()
         self._repaint()
@@ -289,8 +275,13 @@ class Unit:
 
 class Tank(Unit):
     def __init__(self, canvas, row, col, bot=True):
-        super().__init__(canvas, col * world.BLOCK_SIZE, row * world.BLOCK_SIZE, 100, 8,
+        super().__init__(canvas, col * world.BLOCK_SIZE, row * world.BLOCK_SIZE, 5, 8,
                          bot, 'player', has_hp_bar=True)
+
+        # ... (Остальной код __init__) ...
+        self._xp = 0
+        self._xp_to_level_up = 1000  # Например, 100 опыта для первого уровня
+        self._level = 1  # Начинаем с 1 уровня
         self._tank_destroy = 'tank_destroy'  # Добавляем атрибут _tank_destroy
         self._max_ammo = 10 # Максимальное количество патронов
         self._ammo = self._max_ammo # Текущее количество патронов
@@ -328,6 +319,21 @@ class Tank(Unit):
         self._water_speed = self._speed // 2
         self._target = None
 
+    def gain_xp(self, amount):
+        self._xp += amount
+        while self._xp >= self._xp_to_level_up:
+            self.level_up()
+            self._xp -= self._xp_to_level_up
+            self._xp_to_level_up = int(self._xp_to_level_up * 1.5)  # Увеличиваем необходимое количество опыта
+
+    def level_up(self):
+        self._level += 1
+        # Здесь можно добавить логику для улучшения характеристик танка при повышении уровня
+        self._speed *= 1.1 # Пример: увеличение скорости на 10%
+        self._usual_speed = self._speed
+        self._water_speed = self._speed // 2
+        print(f"Tank leveled up! Level: {self._level}, Speed: {self._speed}")
+
     def hp_damage(self):
         if self._hp == 100:
             print('100')
@@ -341,9 +347,9 @@ class Tank(Unit):
             print('0')
 
 
-    def set_target(self, target, target2):
+    def set_target(self, target):
         self._target = target
-        self._target = target2
+
 
     # Добавим методы для получения информации о патронах и топливе
     def get_ammo(self):
@@ -451,7 +457,7 @@ class Tank(Unit):
 class Missile(Unit):
     def __init__(self, canvas, owner):
         super().__init__(canvas, owner.get_x(), owner.get_y(),
-                         6, 20, False,
+                         8, 20, False,
                          'missile_up', has_hp_bar=False)  # Отключаем полоску
 
 
