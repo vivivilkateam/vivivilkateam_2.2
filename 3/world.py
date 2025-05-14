@@ -20,8 +20,9 @@ SCREEN_HEIGHT = 800
 _canvas = None
 _map = []
 AIR = 'a'
-
-
+_camera_x = 0
+_camera_y = 0
+_camera_speed = 0.1  # Скорость "прилипания" камеры (от 0 до 1)
 def take(row, col):
     if _inside_of_map(row, col):
         return _map[row][col].take()
@@ -122,26 +123,30 @@ def initialize(canv):
 def set_camera_xy(x, y):
     global _camera_x, _camera_y
 
-    if x < 0:
-        x = 0
-    if y < 0:
-        y = 0
+    # Плавное перемещение камеры
+    _camera_x += (_limit_camera_x(x) - _camera_x) * _camera_speed
+    _camera_y += (_limit_camera_y(y) - _camera_y) * _camera_speed
 
-    if x > get_widht() - SCREEN_WIDTH:
-        x = get_widht() - SCREEN_WIDTH
-    if y > get_height() - SCREEN_HEIGHT:
-        y = get_height() - SCREEN_HEIGHT
     update_all = False
     if abs(_camera_x - x) >= BLOCK_SIZE or abs(_camera_y - y) >= BLOCK_SIZE:
         update_all = True
 
-    _camera_x = x
-    _camera_y = y
-
     if update_all:
         update_map(all)
 
+def _limit_camera_x(x):
+    if x < 0:
+        return 0
+    if x > get_widht() - SCREEN_WIDTH:
+        return get_widht() - SCREEN_WIDTH
+    return x
 
+def _limit_camera_y(y):
+    if y < 0:
+        return 0
+    if y > get_height() - SCREEN_HEIGHT:
+        return get_height() - SCREEN_HEIGHT
+    return y
 def move_camera(delta_x, delta_y):
     set_camera_xy(_camera_x + delta_x, _camera_y + delta_y)
 

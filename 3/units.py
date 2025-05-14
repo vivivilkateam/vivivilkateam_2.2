@@ -318,7 +318,30 @@ class Tank(Unit):
         self._usual_speed = self._speed
         self._water_speed = self._speed // 2
         self._target = None
+    def jump(self):
+        # Вычисляем направление прыжка
+        jump_x = self._vx * world.BLOCK_SIZE * 3  # 3 блока в направлении X
+        jump_y = self._vy * world.BLOCK_SIZE * 3  # 3 блока в направлении Y
 
+        # Вычисляем новую позицию
+        new_x = self._x + jump_x
+        new_y = self._y + jump_y
+
+        # Ограничиваем перемещение, чтобы не выходить за границы карты
+        new_x = max(0, min(new_x, world.get_widht() - world.BLOCK_SIZE))
+        new_y = max(0, min(new_y, world.get_height() - world.BLOCK_SIZE))
+
+        # Проверяем столкновение с картой
+        temp_hitbox = Hitbox(new_x, new_y, world.BLOCK_SIZE, world.BLOCK_SIZE, padding=self._hitbox.padding)
+        details = {}
+        collision = temp_hitbox.check_map_collision(details)
+
+        # Если нет столкновения, перемещаем танк
+        if not collision:
+            self._x = new_x
+            self._y = new_y
+            self._update_hitbox()
+            self._repaint()
     def gain_xp(self, amount):
         self._xp += amount
         while self._xp >= self._xp_to_level_up:

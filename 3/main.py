@@ -16,7 +16,7 @@ KEY_S = 83
 KEY_A = 65
 KEY_D = 68
 FPS = 60
-
+KEY_SHIFT = 16  # Код клавиши Shift
 
 def update():
     tank_collection.update()
@@ -56,11 +56,14 @@ def update():
 #         return
 
 
-def key_press(event):  # Добавим обработчик нажатий клавиш
+def key_press(event):
     player = tank_collection.get_player()
-
     if player.is_destroyed():
         return
+ # Передаем нажатую клавишу и True (нажата)
+
+    if event.keycode == KEY_SHIFT:
+        player.jump()  # Вызываем метод jump() у танка  # Добавим обработчик нажатий клавиш
 
     # Движение (обработка одновременного нажатия)
     if event.keycode == KEY_W:
@@ -159,7 +162,7 @@ w.geometry(f"{world.SCREEN_WIDTH}x{world.SCREEN_HEIGHT}")
 
 load_textures()
 
-canv = Canvas(w, width=world.SCREEN_WIDTH, height=world.SCREEN_HEIGHT, bg='light green')
+canv = Canvas(w, width=world.SCREEN_WIDTH, height=world.SCREEN_HEIGHT, bg='gray20')
 
 
 
