@@ -6,6 +6,7 @@ from random import randint
 import missile_collection
 import tank_collection
 import math
+import upgrades
 class Unit:
     def __init__(self, canvas, x, y, speed, padding, bot, default_image, has_hp_bar=False):
         self._destroyed = False
@@ -161,7 +162,6 @@ class Unit:
 
 
 
-
     def _create(self):
         self._id = self._canvas.create_image(self._x, self._y, image=skin.get(self._default_image), anchor=NW)
 
@@ -280,7 +280,7 @@ class Tank(Unit):
 
         # ... (Остальной код __init__) ...
         self._xp = 0
-        self._xp_to_level_up = 1000  # Например, 100 опыта для первого уровня
+        self._xp_to_level_up = 100 # Например, 100 опыта для первого уровня
         self._level = 1  # Начинаем с 1 уровня
         self._tank_destroy = 'tank_destroy'  # Добавляем атрибут _tank_destroy
         self._max_ammo = 10 # Максимальное количество патронов
@@ -291,6 +291,7 @@ class Tank(Unit):
         # ... остальной код класса Tank ...
         self._max_hp = 100 # Устанавливаем максимальное здоровье
         self._update_hp_bar() # Обновляем полоску после установки
+        self.has_dash = False  # Рывок пока недоступен
         if bot:
             self._forward_image = 'tank_up'
             self._backward_image = 'tank_down'
@@ -318,30 +319,31 @@ class Tank(Unit):
         self._usual_speed = self._speed
         self._water_speed = self._speed // 2
         self._target = None
-    def jump(self):
-        # Вычисляем направление прыжка
-        jump_x = self._vx * world.BLOCK_SIZE * 3  # 3 блока в направлении X
-        jump_y = self._vy * world.BLOCK_SIZE * 3  # 3 блока в направлении Y
+    def dash(self):
+        if self.has_dash:
+            # Вычисляем направление прыжка
+            jump_x = self._vx * world.BLOCK_SIZE * 3  # 3 блока в направлении X
+            jump_y = self._vy * world.BLOCK_SIZE * 3  # 3 блока в направлении Y
 
-        # Вычисляем новую позицию
-        new_x = self._x + jump_x
-        new_y = self._y + jump_y
+            # Вычисляем новую позицию
+            new_x = self._x + jump_x
+            new_y = self._y + jump_y
 
-        # Ограничиваем перемещение, чтобы не выходить за границы карты
-        new_x = max(0, min(new_x, world.get_widht() - world.BLOCK_SIZE))
-        new_y = max(0, min(new_y, world.get_height() - world.BLOCK_SIZE))
+            # Ограничиваем перемещение, чтобы не выходить за границы карты
+            new_x = max(0, min(new_x, world.get_widht() - world.BLOCK_SIZE))
+            new_y = max(0, min(new_y, world.get_height() - world.BLOCK_SIZE))
 
-        # Проверяем столкновение с картой
-        temp_hitbox = Hitbox(new_x, new_y, world.BLOCK_SIZE, world.BLOCK_SIZE, padding=self._hitbox.padding)
-        details = {}
-        collision = temp_hitbox.check_map_collision(details)
+            # Проверяем столкновение с картой
+            temp_hitbox = Hitbox(new_x, new_y, world.BLOCK_SIZE, world.BLOCK_SIZE, padding=self._hitbox.padding)
+            details = {}
+            collision = temp_hitbox.check_map_collision(details)
 
-        # Если нет столкновения, перемещаем танк
-        if not collision:
-            self._x = new_x
-            self._y = new_y
-            self._update_hitbox()
-            self._repaint()
+            # Если нет столкновения, перемещаем танк
+            if not collision:
+                self._x = new_x
+                self._y = new_y
+                self._update_hitbox()
+                self._repaint()
     def gain_xp(self, amount):
         self._xp += amount
         while self._xp >= self._xp_to_level_up:

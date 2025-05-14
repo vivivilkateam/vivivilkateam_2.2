@@ -18,15 +18,24 @@ KEY_D = 68
 FPS = 60
 KEY_SHIFT = 16  # Код клавиши Shift
 
-def update():
-    tank_collection.update()
-    missile_collection.update()
-    player = tank_collection.get_player()
-    world.set_camera_xy(player.get_x() - world.SCREEN_WIDTH // 2 + player.get_size() // 2,
-                        player.get_y() - world.SCREEN_HEIGHT // 2 + player.get_size() // 2)
-    world.update_map()
-    w.after(1000 // FPS, update)
+game_paused = False  # Игра не на паузе
 
+def toggle_pause(event=None):
+    global game_paused
+    game_paused = not game_paused
+    print(f"Game paused: {game_paused}")
+
+def update():
+    global game_paused
+
+    if not game_paused: # Обновляем только если игра не на паузе
+        tank_collection.update()
+        missile_collection.update()
+        player = tank_collection.get_player()
+        world.set_camera_xy(player.get_x() - world.SCREEN_WIDTH // 2 + player.get_size() // 2,
+                            player.get_y() - world.SCREEN_HEIGHT // 2 + player.get_size() // 2)
+        world.update_map()
+    w.after(1000 // FPS, update)
 #
 # def key_press(event):
 #     player = tank_collection.get_player()
@@ -62,8 +71,7 @@ def key_press(event):
         return
  # Передаем нажатую клавишу и True (нажата)
 
-    if event.keycode == KEY_SHIFT:
-        player.jump()  # Вызываем метод jump() у танка  # Добавим обработчик нажатий клавиш
+ # Вызываем метод jump() у танка  # Добавим обработчик нажатий клавиш
 
     # Движение (обработка одновременного нажатия)
     if event.keycode == KEY_W:
@@ -78,14 +86,14 @@ def key_press(event):
     elif event.keycode == 32:
         player.fire()
 
-# def key_release(event): # Добавим обработчик отпускания клавиш
-#     player = tank_collection.get_player()
-#
-#     if event.keycode == KEY_W or event.keycode == KEY_S:
-#         player.stop()
-#     elif event.keycode == KEY_A or event.keycode == KEY_D:
-#         player.stop()
-# # ...
+def key_release(event):
+    player = tank_collection.get_player()
+    if player.is_destroyed():
+        return
+    player.set_movement(event.keycode, False) # Передаем отпущенную клавишу и False (отпущена)
+
+    if event.keycode == KEY_SHIFT:
+        player.dash() #Вызываем рывок
 
 def load_textures():
 
@@ -174,7 +182,7 @@ missile_collection.initialize(canv)
 
 
 
-w.bind('<KeyPress>', key_press)
+w.bind("<p>", toggle_pause) #или любую другую клавишу
 update()
 
 

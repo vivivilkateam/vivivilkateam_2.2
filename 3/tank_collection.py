@@ -3,6 +3,12 @@ import missile_collection
 import units
 from tkinter import NW
 import world
+import tkinter as tk
+import units
+import upgrades
+
+_upgrade_window = None
+
 
 _tanks = []
 _canvas = None
@@ -10,6 +16,38 @@ id_screen_text = 0
 enemy_colvo = 100
 
 enemy = None
+
+
+def show_upgrade_menu(tank):
+    global _upgrade_window
+
+    if _upgrade_window:
+        _upgrade_window.destroy()  # Закрываем старое окно, если оно есть
+
+    _upgrade_window = tk.Toplevel(_canvas.master)  # Создаем новое окно
+    _upgrade_window.title("Выберите улучшение")
+
+    # Получаем случайные улучшения
+    available_upgrades = upgrades.get_random_upgrades(3)
+
+    # Создаем элементы для каждого улучшения
+    for i, upgrade in enumerate(available_upgrades):
+        label = tk.Label(_upgrade_window, text=f"{upgrade.name}: {upgrade.description}")
+        label.pack()
+
+        button = tk.Button(_upgrade_window, text=f"Выбрать {upgrade.name}",
+                           command=lambda u=upgrade: _apply_upgrade(tank, u))  # Замыкание!
+        button.pack()
+
+    # Функция для применения улучшения и закрытия окна
+
+
+def _apply_upgrade(tank, upgrade):
+    upgrade.apply(tank)
+    global _upgrade_window
+    _upgrade_window.destroy()
+    _upgrade_window = None  # Убираем окно
+
 
 def initialize(canv):
     global _canvas, id_screen_text
@@ -28,7 +66,10 @@ def initialize(canv):
                                          font=('TkDefualFont', 20),
                                          fill='black',
                                          anchor=NW)
-
+def show_upgrade_menu_if_level_up(tank):
+    global _upgrade_window
+    if tank._xp >= tank._xp_to_level_up and not _upgrade_window:
+       show_upgrade_menu(tank)
 def _get_screen_text():
     player = get_player()
     if player.is_destroyed():
