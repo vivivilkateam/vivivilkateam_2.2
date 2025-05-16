@@ -4,7 +4,13 @@ from random import randint, choice
 
 _camera_x = 0
 _camera_y = 0
+# ... (Другие импорты) ...
 
+BLOCK_SIZE = 64
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 800
+FPS = 60  # Переносим FPS сюда
+# ... (Остальной код world.py) ...
 GROUND = 'g'
 WATER = 'w'
 CONCRETE = 'c'

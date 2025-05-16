@@ -1,4 +1,4 @@
-# 1 создадим модуль, который будет управлять всеми изображениями
+# texture.py
 from tkinter import PhotoImage
 
 _frames = {}

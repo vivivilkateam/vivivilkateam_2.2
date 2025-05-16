@@ -2,41 +2,45 @@
 import missile_collection
 
 
-
+import abilities
 from tkinter import *
-
+import units
 import world
 import tank_collection
 import texture
-
-KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN = 37, 39, 38, 40
-
-KEY_W = 87
-KEY_S = 83
-KEY_A = 65
-KEY_D = 68
+import keys
+from abilities import dash_ability
+# Код клавиши Shift
 FPS = 60
-KEY_SHIFT = 16  # Код клавиши Shift
-
 game_paused = False  # Игра не на паузе
 
-def toggle_pause(event=None):
-    global game_paused
-    game_paused = not game_paused
-    print(f"Game paused: {game_paused}")
-
+# ... (Внутри функции update()) ...
 def update():
     global game_paused
 
-    if not game_paused: # Обновляем только если игра не на паузе
+    if not game_paused:  # Обновляем только если игра не на паузе
         tank_collection.update()
         missile_collection.update()
         player = tank_collection.get_player()
         world.set_camera_xy(player.get_x() - world.SCREEN_WIDTH // 2 + player.get_size() // 2,
                             player.get_y() - world.SCREEN_HEIGHT // 2 + player.get_size() // 2)
         world.update_map()
+    if tank_collection.get_player()._level_up_display_time > 0: # Проверяем display_time
+        game_paused = True
+    else:
+        game_paused = False
+
     w.after(1000 // FPS, update)
-#
+def toggle_pause(event=None):
+    global game_paused
+    game_paused = not game_paused
+    print(f"Game paused: {game_paused}")
+
+    w.after(1000 // FPS, update)
+
+
+# ... (Внутри функции update()) ...
+
 # def key_press(event):
 #     player = tank_collection.get_player()
 #
@@ -74,28 +78,30 @@ def key_press(event):
  # Вызываем метод jump() у танка  # Добавим обработчик нажатий клавиш
 
     # Движение (обработка одновременного нажатия)
-    if event.keycode == KEY_W:
+    if event.keycode == keys.KEY_W:
         player.forward()
-    elif event.keycode == KEY_S:
+    elif event.keycode == keys.KEY_S:
         player.backward()
-    if event.keycode == KEY_A:
+    if event.keycode == keys.KEY_A:
         player.left()
-    elif event.keycode == KEY_D:
+    elif event.keycode == keys.KEY_D:
         player.right()
 
-    elif event.keycode == 32:
+    if event.keycode == 32:
         player.fire()
 
 def key_release(event):
     player = tank_collection.get_player()
     if player.is_destroyed():
         return
-    player.set_movement(event.keycode, False) # Передаем отпущенную клавишу и False (отпущена)
+    player.set_movement(event.keycode, True)
 
-    if event.keycode == KEY_SHIFT:
-        player.dash() #Вызываем рывок
+    if event.keycode == keys.KEY_SHIFT and player.dash_ability is not None:
+        print("SHIFT key pressed")
+        player.dash()  # вызываем рывок только если способность есть
 
 def load_textures():
+    texture.load('dash_icon', '../img/dash_icon.png')
 
     texture.load('tank_up', '../img/tank_up.png')
     texture.load('tank_down', '../img/tank_down.png')
@@ -176,7 +182,8 @@ canv = Canvas(w, width=world.SCREEN_WIDTH, height=world.SCREEN_HEIGHT, bg='gray2
 
 canv.pack()
 world.initialize(canv)
-tank_collection.initialize(canv)
+tank_collection.initialize(canv,w)
+#main.py
 
 missile_collection.initialize(canv)
 
@@ -188,7 +195,7 @@ update()
 
 # Привязка клавиш
 w.bind("<KeyPress>", key_press) # Меняем привязку, чтобы обрабатывать все нажатия в key_press
-# w.bind("<KeyRelease>", key_release) # Добавляем обработку отпускания клавиш
+w.bind("<KeyRelease>", key_release) # Добавляем обработку отпускания клавиш
 
 # Оставляем старые привязки, чтобы ничего не сломать.  Их можно будет удалить.
 

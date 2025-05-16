@@ -49,23 +49,7 @@ def _apply_upgrade(tank, upgrade):
     _upgrade_window = None  # Убираем окно
 
 
-def initialize(canv):
-    global _canvas, id_screen_text
-    _canvas = canv
-    player = spawn(False)
 
-    for i in range(enemy_colvo):
-        enemy = spawn(True).set_target(player)
-
-
-
-
-
-    id_screen_text = _canvas.create_text(10, 10,
-                                         text=_get_screen_text(),
-                                         font=('TkDefualFont', 20),
-                                         fill='black',
-                                         anchor=NW)
 def show_upgrade_menu_if_level_up(tank):
     global _upgrade_window
     if tank._xp >= tank._xp_to_level_up and not _upgrade_window:
@@ -124,9 +108,25 @@ def spawn_enemy():
 
     t.set_target(get_player())
     _tanks.append(t)
+# tank_collection.py
+def initialize(canvas, w):
+    global _canvas, id_screen_text
+    _canvas = canvas
+    print("Spawning tank in init")
+    global player
+    player = spawn(False, w) # Передаём w
+    world.set_camera_xy(player.get_x() - world.SCREEN_WIDTH // 2 + player.get_size() // 2,
+                        player.get_y() - world.SCREEN_HEIGHT // 2 + player.get_size() // 2)
 
-
-def spawn(is_bot=True):
+    id_screen_text = _canvas.create_text(10, 10,
+                                         text=_get_screen_text(),
+                                         font=('TkDefualFont', 20),
+                                         fill='black',
+                                         anchor=NW)
+    for i in range(enemy_colvo):
+        spawn(True, w) # Передаём w
+def spawn(is_bot=True, w = None):
+    print(f"Spawning tank: is_bot={is_bot}")
     cols = world.get_cols()
     rows = world.get_rows()
 
@@ -137,8 +137,7 @@ def spawn(is_bot=True):
         if world.get_block(row, col) != world.GROUND:
             continue
 
-        t = units.Tank(_canvas, row,
-                 col, bot=is_bot)
+        t = units.Tank(_canvas, row, col, bot=is_bot, w = w) # Передаём w
 
         if not check_collision(t):
             _tanks.append(t)

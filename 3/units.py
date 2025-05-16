@@ -1,4 +1,5 @@
 import world
+import abilities
 from hitbox import Hitbox
 import texture as skin
 from tkinter import NW
@@ -7,6 +8,8 @@ import missile_collection
 import tank_collection
 import math
 import upgrades
+from abilities import dash_ability
+from keys import KEY_W, KEY_S, KEY_A, KEY_D, KEY_SHIFT
 class Unit:
     def __init__(self, canvas, x, y, speed, padding, bot, default_image, has_hp_bar=False):
         self._destroyed = False
@@ -26,52 +29,26 @@ class Unit:
         self._hp_bar_id = None  # Изначально полоски нет
         self._max_hp = 100
         self._has_hp_bar = has_hp_bar  # Флаг, есть ли полоска
+        self._fuel = 10000 #добавляем
 
         if self._has_hp_bar:
             self._create_hp_bar()
         self._dx = 0  # Текущее направление по X (-1, 0, 1)
         self._dy = 0  # Текущее направление по Y (-1, 0, 1)
         self._moving = False  # Движется ли танк в данный момент
-
-    # def move_left(self):
-    #     self._vx = -1
-    #     self._vy = 0
-    #     self._moving = True
-    #     self._dx = -1
-    #     self._canvas.itemconfig(self._id,
-    #                             image=skin.get(self._left_image))
-    #
-    # def move_right(self):
-    #     self._vx = 1
-    #     self._vy = 0
-    #     self._moving = True
-    #     self._dx = 1
-    #     self._canvas.itemconfig(self._id,
-    #                             image=skin.get(self._right_image))
-    #
-    # def move_up(self):
-    #     self._vx = 0
-    #     self._vy = -1
-    #     self._moving = True
-    #     self._dy = -1
-    #     self._canvas.itemconfig(self._id,
-    #                             image=skin.get(self._forward_image))
-    #
-    # def move_down(self):
-    #     self._vx = 0
-    #     self._vy = 1
-    #     self._moving = True
-    #     self._dy = 1
-    #     self._canvas.itemconfig(self._id,
-    #                             image=skin.get(self._backward_image))
-    #
-    # def stop(self):
-    #     self._vx = 0
-    #     self._vy = 0
-    #     self._moving = False
-    #     self._dx = 0
-    #     self._dy = 0
-
+    def set_movement(self, keycode, is_pressed):
+        if keycode == KEY_W:
+            self._vy = -1 if is_pressed else 0
+            self.forward()
+        elif keycode == KEY_S:
+            self._vy = 1 if is_pressed else 0
+            self.backward()
+        elif keycode == KEY_A:
+            self._vx = -1 if is_pressed else 0
+            self.left()
+        elif keycode == KEY_D:
+            self._vx = 1 if is_pressed else 0
+            self.right()
     def damage(self, value):
         self._hp -= value
         if self._hp < 0:
@@ -274,90 +251,226 @@ class Unit:
 
 
 class Tank(Unit):
-    def __init__(self, canvas, row, col, bot=True):
+    def __init__(self, canvas, row, col, bot=True, w=None):
         super().__init__(canvas, col * world.BLOCK_SIZE, row * world.BLOCK_SIZE, 5, 8,
                          bot, 'player', has_hp_bar=True)
-
-        # ... (Остальной код __init__) ...
+        self.w = w
+        self._chosen_upgrade = None
+        self.dash_ability = None  # Добавляем атрибут dash_ability
+        # Инициализация атрибутов Tank
         self._xp = 0
-        self._xp_to_level_up = 100 # Например, 100 опыта для первого уровня
-        self._level = 1  # Начинаем с 1 уровня
-        self._tank_destroy = 'tank_destroy'  # Добавляем атрибут _tank_destroy
-        self._max_ammo = 10 # Максимальное количество патронов
-        self._ammo = self._max_ammo # Текущее количество патронов
-        self._max_fuel = 100 # Максимальное количество топлива
-        self._fuel = self._max_fuel # Текущее количество топлива
-        self._tank_destroy = 'tank_destroy'  # Добавляем атрибут _tank_destroy
-        # ... остальной код класса Tank ...
-        self._max_hp = 100 # Устанавливаем максимальное здоровье
-        self._update_hp_bar() # Обновляем полоску после установки
-        self.has_dash = False  # Рывок пока недоступен
+        self._xp_to_level_up = 100
+        self._level = 1
+        self._tank_destroy = 'tank_destroy'
+        self._max_ammo = 10
+        self._ammo = self._max_ammo
+        self._max_fuel = 100
+        #self.has_dash = False
+
+        # Инициализация изображений
         if bot:
             self._forward_image = 'tank_up'
             self._backward_image = 'tank_down'
             self._left_image = 'tank_left'
             self._right_image = 'tank_right'
-            self._100 = '100hp'
-            self._75 = '75hp'
-            self._50 = '50hp'
-            self._25 = '25hp'
-            self._0 = '0hp'
         else:
             self._forward_image = 'player'
             self._backward_image = 'player'
             self._left_image = 'player'
             self._right_image = 'player'
-            self._tank_destroy = 'player'
-            self._100 = '100hp'
-            self._75 = '75hp'
-            self._50 = '50hp'
-            self._25 = '25hp'
-            self._0 = '0hp'
+            self._tank_destroy = 'player' # Добавляем атрибут _tank_destroy
+        self._100 = '100'
+        self._75 = '75'
+        self._50 = '50'
+        self._25 = '25'
+        self._0 = '0'
 
+        # Дополнительные инициализации
         self.forward()
         self._ammo = 80
         self._usual_speed = self._speed
         self._water_speed = self._speed // 2
         self._target = None
-    def dash(self):
-        if self.has_dash:
-            # Вычисляем направление прыжка
-            jump_x = self._vx * world.BLOCK_SIZE * 3  # 3 блока в направлении X
-            jump_y = self._vy * world.BLOCK_SIZE * 3  # 3 блока в направлении Y
 
-            # Вычисляем новую позицию
-            new_x = self._x + jump_x
-            new_y = self._y + jump_y
+        # Атрибуты для отображения окна уровня (перенесены из LevelUpWindow)
+        self.level_up_rect_id = None
+        self._level_up_text_ids = []
+        self._level_up_display_time = 0
+        self._xp_bar_id = None
 
-            # Ограничиваем перемещение, чтобы не выходить за границы карты
-            new_x = max(0, min(new_x, world.get_widht() - world.BLOCK_SIZE))
-            new_y = max(0, min(new_y, world.get_height() - world.BLOCK_SIZE))
+    def show_level_up_message(self, w):
+        self.hide_level_up_message()  # Скрываем старое окно, если оно есть
+        self._level_up_display_time = 1000  # Паузим игру
+        rect_width = 600
+        rect_height = 300
+        x = world.SCREEN_WIDTH // 2 - rect_width // 2
+        y = 50
 
-            # Проверяем столкновение с картой
-            temp_hitbox = Hitbox(new_x, new_y, world.BLOCK_SIZE, world.BLOCK_SIZE, padding=self._hitbox.padding)
-            details = {}
-            collision = temp_hitbox.check_map_collision(details)
+        self.level_up_rect_id = self._canvas.create_rectangle(
+            x, y, x + rect_width, y + rect_height,
+            fill="black", outline="white", width=3
+        )
 
-            # Если нет столкновения, перемещаем танк
-            if not collision:
-                self._x = new_x
-                self._y = new_y
-                self._update_hitbox()
-                self._repaint()
+        # Отображение уровня
+        level_text = f"Уровень {self._level}"
+        text_x = x + rect_width // 2
+        text_y = y + 20
+        level_text_id = self._canvas.create_text(
+            text_x, text_y, text=level_text, font=("Arial", 16), fill="white"
+        )
+        self._level_up_text_ids.append(level_text_id)
+
+        w.unbind("<KeyPress-1>")
+        w.unbind("<KeyPress-2>")
+        w.unbind("<KeyPress-3>")
+        available_upgrades = abilities.get_random_upgrades(3)
+        self._chosen_upgrade = None  # Сбрасываем выбор при открытии меню
+
+        # Отображение улучшений
+        for i, upgrade in enumerate(available_upgrades):
+            image_x = x + 20
+            image_y = y + 50 + i * 60
+            image_id = self._canvas.create_image(
+                image_x, image_y, image=skin.get('dash_icon'), anchor="nw"
+            )
+            self._level_up_text_ids.append(image_id)
+
+            text_x = x + 100
+            text_y1 = y + 50 + i * 60
+            text_y2 = text_y1 + 20
+
+            description_lines = upgrade.description.split(' ')
+            line1 = " ".join(description_lines[:4])
+            line2 = " ".join(description_lines[4:])
+
+            upgrade_text_id1 = self._canvas.create_text(
+                text_x, text_y1, text=f"{upgrade.name}: {line1}", font=("Arial", 12), fill="white", anchor="w"
+            )
+            self._level_up_text_ids.append(upgrade_text_id1)
+
+            upgrade_text_id2 = self._canvas.create_text(
+                text_x, text_y2, text=line2, font=("Arial", 12), fill="white", anchor="w"
+            )
+            self._level_up_text_ids.append(upgrade_text_id2)
+
+        #  Сохраняем выбранный апгрейд в зависимости от нажатой клавиши
+
+        if len(available_upgrades) > 0:
+            self.w.bind("<KeyPress-1>", lambda event, up=available_upgrades[0]: self._choose_upgrade(up))
+        if len(available_upgrades) > 1:
+            self.w.bind("<KeyPress-2>", lambda event, up=available_upgrades[1]: self._choose_upgrade(up))
+        if len(available_upgrades) > 2:
+            self.w.bind("<KeyPress-3>", lambda event, up=available_upgrades[2]: self._choose_upgrade(up))
+
+    def _choose_upgrade(self, upgrade):
+        self._chosen_upgrade = upgrade # Сохраняем выбранное улучшение
+        self.apply_upgrade() # Применяем
+
+    def apply_upgrade(self):
+        print("apply_upgrade called")  # Проверяем вызов метода
+        if self._chosen_upgrade:
+            if self._chosen_upgrade.name == "Рывок":
+               self.dash_ability = True # теперь танк имеет эту способность
+               print("Dash ability unlocked!")  # Добавляем отладочный вывод
+            else:
+                self.dash_ability = None
+                print("Dash ability locked!")
+
+        self.hide_level_up_message()
+    def update(self):
+        if self._bot:
+            self._AI()
+        self._dx = self._vx * self._speed
+        self._dy = self._vy * self._speed
+        self._x += self._dx
+        self._y += self._dy
+        self._update_hitbox()
+        self._check_map_collision()
+        self._repaint()
+        # Проверяем и скрываем окно (если оно отображено)
+        if self._level_up_display_time > 0:
+            self._level_up_display_time -= 1
+            if self._level_up_display_time == 0:
+                self.hide_level_up_message()
+
+
+
+
+    def _update_xp_bar(self):
+        if self._xp_bar_id is not None:
+            x = world.SCREEN_WIDTH // 2 - 600 // 2
+            xp_percentage = min(1.0, self._xp / self._xp_to_level_up)
+            bar_width = int((600 - 20) * xp_percentage)
+            self._canvas.coords(
+                self._xp_bar_id,
+                x + 10,
+                50 + 80,
+                x + 10 + bar_width,
+                50 + 90,
+            )
+
+    def hide_level_up_message(self):
+        if self.level_up_rect_id:
+            self._canvas.delete(self.level_up_rect_id)
+            self.level_up_rect_id = None
+        for text_id in self._level_up_text_ids:
+            if text_id:
+                self._canvas.delete(text_id)
+        if self._xp_bar_id:
+            self._canvas.delete(self._xp_bar_id)
+            self._xp_bar_id = None
+        self._level_up_text_ids = []
+        self._level_up_display_time = 0  # Обнуляем display_time при скрытии
+
     def gain_xp(self, amount):
         self._xp += amount
         while self._xp >= self._xp_to_level_up:
             self.level_up()
             self._xp -= self._xp_to_level_up
-            self._xp_to_level_up = int(self._xp_to_level_up * 1.5)  # Увеличиваем необходимое количество опыта
+            self._xp_to_level_up = int(self._xp_to_level_up * 1.5)
+        self._update_xp_bar()
+
+
 
     def level_up(self):
         self._level += 1
-        # Здесь можно добавить логику для улучшения характеристик танка при повышении уровня
-        self._speed *= 1.1 # Пример: увеличение скорости на 10%
+        self._speed *= 1.1
         self._usual_speed = self._speed
         self._water_speed = self._speed // 2
         print(f"Tank leveled up! Level: {self._level}, Speed: {self._speed}")
+        self.show_level_up_message(self.w)  # Передаём w
+
+    def dash(self):
+        print("Tank.dash() called")
+        jump_x = self._vx * world.BLOCK_SIZE * 3
+        jump_y = self._vy * world.BLOCK_SIZE * 3
+        if jump_x == 0 and jump_y == 0:
+            print("jump_x and jump_y are 0, returning")
+            return
+        print(f"jump_x: {jump_x}, jump_y: {jump_y}")
+        new_x = self._x + jump_x
+        new_y = self._y + jump_y
+
+        # Ограничиваем перемещение, чтобы не выходить за границы карты
+        new_x = max(0, min(new_x, world.get_widht() - world.BLOCK_SIZE))
+        new_y = max(0, min(new_y, world.get_height() - world.BLOCK_SIZE))
+
+        temp_hitbox = Hitbox(new_x, new_y, world.BLOCK_SIZE, world.BLOCK_SIZE, padding=self._hitbox.padding)
+        details = {}
+        collision = temp_hitbox.check_map_collision(details)
+        print(f"Collision: {collision}")  # Проверяем столкновение
+        print(f"Details: {details}")  # Выводим детали столкновения
+        # Если нет столкновения, перемещаем танк
+        if not collision:
+            self._x = new_x
+            self._y = new_y
+            self._update_hitbox()
+            self._repaint()
+            print("Tank moved successfully!")
+        else:
+            print("Collision detected, dash aborted.")
+
+
 
     def hp_damage(self):
         if self._hp == 100:
@@ -396,8 +509,7 @@ class Tank(Unit):
             else:
                 self.backward()
 
-    def get_ammo(self):
-        return self._ammo
+
 
     def _take_ammo(self):
         self._ammo += 10

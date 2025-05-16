@@ -1,0 +1,7 @@
+# keys.py
+KEY_LEFT, KEY_RIGHT, KEY_UP, KEY_DOWN = 37, 39, 38, 40
+KEY_W = 87
+KEY_S = 83
+KEY_A = 65
+KEY_D = 68
+KEY_SHIFT = 16

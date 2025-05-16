@@ -12,9 +12,9 @@ class Upgrade:
         self.apply_func(tank)
 
 # Примеры улучшений:
+
 def get_random_upgrades(num_upgrades=3):
-    """Возвращает список случайных улучшений."""
-    all_upgrades = [dash_upgrade]  # Замените на полный список улучшений
+    all_upgrades = [dash_ability]  # Замените на полный список улучшений
     if len(all_upgrades) <= num_upgrades:
         return all_upgrades
     return random.sample(all_upgrades, num_upgrades)
