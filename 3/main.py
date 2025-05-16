@@ -100,8 +100,16 @@ def key_release(event):
         print("SHIFT key pressed")
         player.dash()  # вызываем рывок только если способность есть
 
+# main.py
 def load_textures():
+    # ... (другие текстуры) ...
+    texture.load('regen_icon', '../img/regen_icon.png')
+    texture.load('double_shot_icon', '../img/duo_missile_icon.png')
+    texture.load('damage_icon', '../img/damage_icon.png')
     texture.load('dash_icon', '../img/dash_icon.png')
+    texture.load('hp_icon', '../img/hp_icon.png')
+    texture.load('ammo_icon', '../img/ammo_icon.png')
+
 
     texture.load('tank_up', '../img/tank_up.png')
     texture.load('tank_down', '../img/tank_down.png')

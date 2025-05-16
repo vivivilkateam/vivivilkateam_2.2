@@ -1,11 +1,15 @@
+import world
+import abilities
+from hitbox import Hitbox
+import texture as skin
+from tkinter import NW
 from random import randint
 import missile_collection
-import units
-from tkinter import NW
-import world
-import tkinter as tk
-import units
+import tank_collection
+import math
 import upgrades
+import units
+
 
 _upgrade_window = None
 
@@ -17,6 +21,41 @@ enemy_colvo = 100
 
 enemy = None
 
+def initialize(canvas, w):
+    global _canvas, id_screen_text
+    _canvas = canvas
+    print("Spawning tank in init")
+    global player
+    player = spawn(False, w) # Передаём w
+    world.set_camera_xy(player.get_x() - world.SCREEN_WIDTH // 2 + player.get_size() // 2,
+                        player.get_y() - world.SCREEN_HEIGHT // 2 + player.get_size() // 2)
+
+    id_screen_text = _canvas.create_text(10, 10,
+                                         text=_get_screen_text(),
+                                         font=('TkDefualFont', 20),
+                                         fill='black',
+                                         anchor=NW)
+    for i in range(enemy_colvo):
+        spawn(True, w) # Передаём w
+def spawn(is_bot=True, w = None):
+    print(f"Spawning tank: is_bot={is_bot}")
+    cols = world.get_cols()
+    rows = world.get_rows()
+
+    while True:
+        col = randint(1, cols - 1)
+        row = randint(1, rows - 1)
+
+        if world.get_block(row, col) != world.GROUND:
+            continue
+
+        t = units.Tank(_canvas, row, col, bot=is_bot, w = w) # Передаём w
+
+        if not check_collision(t):
+            _tanks.append(t)
+            return t
+def get_random_upgrades(num_upgrades=3):
+    return upgrades.get_random_upgrades(num_upgrades)
 
 def show_upgrade_menu(tank):
     global _upgrade_window
@@ -67,9 +106,10 @@ def _get_screen_text():
     level = player._level
     xp = player._xp
     xp_to_level_up = player._xp_to_level_up
+    hp = player.get_hp()
+    max_hp = player._max_hp
 
-    return f'Враги: {enemies}, Патроны: {ammo}, Топливо: {fuel}, Level: {level}, XP: {xp}/{xp_to_level_up}' # Формируем строку
-
+    return f'Враги: {enemies}, Патроны: {ammo}, Топливо: {fuel}, Level: {level}, XP: {xp}/{xp_to_level_up}, HP: {hp}/{max_hp}'
 def _update_screen():
     _canvas.itemconfig(id_screen_text, text=_get_screen_text())
 
@@ -108,37 +148,3 @@ def spawn_enemy():
 
     t.set_target(get_player())
     _tanks.append(t)
-# tank_collection.py
-def initialize(canvas, w):
-    global _canvas, id_screen_text
-    _canvas = canvas
-    print("Spawning tank in init")
-    global player
-    player = spawn(False, w) # Передаём w
-    world.set_camera_xy(player.get_x() - world.SCREEN_WIDTH // 2 + player.get_size() // 2,
-                        player.get_y() - world.SCREEN_HEIGHT // 2 + player.get_size() // 2)
-
-    id_screen_text = _canvas.create_text(10, 10,
-                                         text=_get_screen_text(),
-                                         font=('TkDefualFont', 20),
-                                         fill='black',
-                                         anchor=NW)
-    for i in range(enemy_colvo):
-        spawn(True, w) # Передаём w
-def spawn(is_bot=True, w = None):
-    print(f"Spawning tank: is_bot={is_bot}")
-    cols = world.get_cols()
-    rows = world.get_rows()
-
-    while True:
-        col = randint(1, cols - 1)
-        row = randint(1, rows - 1)
-
-        if world.get_block(row, col) != world.GROUND:
-            continue
-
-        t = units.Tank(_canvas, row, col, bot=is_bot, w = w) # Передаём w
-
-        if not check_collision(t):
-            _tanks.append(t)
-            return t

@@ -7,8 +7,8 @@ _camera_y = 0
 # ... (Другие импорты) ...
 
 BLOCK_SIZE = 64
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 1200   # 800 * 1.5
+SCREEN_HEIGHT =800
 FPS = 60  # Переносим FPS сюда
 # ... (Остальной код world.py) ...
 GROUND = 'g'
@@ -18,16 +18,13 @@ BRICK = 'b'
 
 MISSLE = 'm'
 
-BLOCK_SIZE = 64
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 800
+
 
 _canvas = None
 _map = []
 AIR = 'a'
-_camera_x = 0
-_camera_y = 0
+
 _camera_speed = 0.1  # Скорость "прилипания" камеры (от 0 до 1)
 def take(row, col):
     if _inside_of_map(row, col):
