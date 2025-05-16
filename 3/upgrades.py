@@ -72,7 +72,6 @@ regen_upgrade = UltimateAbility(
     cooldown = 0,
     icon_name="regen_icon" #ДОБАВЬТЕ КАРТИНКУ В main.py
 )
-
 def get_random_upgrades(num_upgrades=3):
     all_upgrades = [hp_upgrade, dash_upgrade, ammo_upgrade, damage_up_upgrade, double_shot_upgrade, regen_upgrade]  # Все улучшения!
     if len(all_upgrades) <= num_upgrades:

@@ -17,7 +17,7 @@ _upgrade_window = None
 _tanks = []
 _canvas = None
 id_screen_text = 0
-enemy_colvo = 100
+enemy_colvo = 150
 
 enemy = None
 
@@ -93,7 +93,7 @@ def show_upgrade_menu_if_level_up(tank):
     global _upgrade_window
     if tank._xp >= tank._xp_to_level_up and not _upgrade_window:
        show_upgrade_menu(tank)
-def _get_screen_text():
+def _get_screen_text(formatted_time=None):
     player = get_player()
     if player.is_destroyed():
         return 'GAME OVER'
@@ -109,9 +109,13 @@ def _get_screen_text():
     hp = player.get_hp()
     max_hp = player._max_hp
 
-    return f'Враги: {enemies}, Патроны: {ammo}, Топливо: {fuel}, Level: {level}, XP: {xp}/{xp_to_level_up}, HP: {hp}/{max_hp}'
-def _update_screen():
-    _canvas.itemconfig(id_screen_text, text=_get_screen_text())
+    text = f'Враги: {enemies}, Патроны: {ammo}, Топливо: {fuel}, Level: {level}, XP: {xp}/{xp_to_level_up}, HP: {hp}/{max_hp}'
+    if formatted_time:
+        text += f", Время: {formatted_time}"  # Добавляем время
+    return text
+
+def _update_screen(formatted_time=None):
+    _canvas.itemconfig(id_screen_text, text=_get_screen_text(formatted_time))
 
 
 def get_player():
@@ -119,19 +123,20 @@ def get_player():
 
 
 
-def update():
-    _update_screen()
+def update(game_paused, formatted_time=None):  # Принимаем game_paused и время
+    if game_paused:  # Проверяем, находится ли игра на паузе
+        return  # Если да, то выходим из метода, ничего не обновляя
+
+    _update_screen(formatted_time)  # Передаем время
     start = len(_tanks) - 1
     for i in range(start, -1, -1):
         if _tanks[i].is_destroyed() and i != 0:
-            _tanks[i]._canvas.delete(_tanks[i]._hp_bar_id) # Удаляем полоску перед удалением
+            _tanks[i]._canvas.delete(_tanks[i]._hp_bar_id)
             del _tanks[i]
         else:
-            _tanks[i].update()
+            _tanks[i].update(game_paused)  # Вызываем unit.update и передаем game_paused
             check_collision(_tanks[i])
             missile_collection.check_missiles_collision(_tanks[i])
-
-
 def check_collision(tank):
     for other_tank in _tanks:
         if tank == other_tank:

@@ -55,7 +55,7 @@ def get_block(row, col):
     return AIR
 
 
-def create_map(rows=100, cols=100):
+def create_map(rows=75, cols=75):
     global _map
     _map = []
     for i in range(rows):
@@ -116,7 +116,7 @@ def initialize(canv):
     global _canvas
     _canvas = canv
 
-    create_map(200, 200)
+    create_map(150, 150)
 
     # load_map('../map/1.tmap')
     # load_map('../map/2.tmap')

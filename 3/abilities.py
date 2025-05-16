@@ -108,6 +108,20 @@ double_shot_upgrade = UltimateAbility(
     cooldown=0,
     icon_name="double_shot_icon"
 )
+class RegenUpgrade(UltimateAbility):  # Наследуемся от UltimateAbility
+    def __init__(self):
+        super().__init__(
+            name="Регенерация",
+            description="Восстанавливает 10 хп раз в 5 секунд.",
+            cooldown=0,
+            icon_name="regen_icon"  # ДОБАВЬТЕ КАРТИНКУ В main.py
+        )
+
+    def apply(self, tank):  # Переопределяем метод apply
+        tank.regen()
+        print("Регенерация ability unlocked!")
+
+regen_upgrade = RegenUpgrade()
 def get_random_upgrades(num_upgrades=3):
     all_upgrades = [hp_upgrade, dash_upgrade, ammo_upgrade, damage_up_upgrade, double_shot_upgrade]  # Все улучшения!
     if len(all_upgrades) <= num_upgrades:

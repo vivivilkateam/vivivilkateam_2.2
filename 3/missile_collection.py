@@ -15,8 +15,11 @@ def fire(owner):
     _missiles.append(m)
     return m
 
-def update():
-    start = len(_missiles)-1
+def update(game_paused):  # Принимаем game_paused как аргумент
+    if game_paused:  # Проверяем, находится ли игра на паузе
+        return  # Если да, то выходим из метода
+
+    start = len(_missiles) - 1
     for i in range(start, -1, -1):
         if _missiles[i].is_destroyed():
             del _missiles[i]

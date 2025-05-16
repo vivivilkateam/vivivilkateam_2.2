@@ -8,6 +8,7 @@ import missile_collection
 import tank_collection
 import math
 import upgrades
+import time
 from abilities import dash_ability
 from keys import KEY_W, KEY_S, KEY_A, KEY_D, KEY_SHIFT
 class Unit:
@@ -410,8 +411,9 @@ class Tank(Unit):
         print(f"Chosen upgrade: {self._chosen_upgrade}")
         self.apply_upgrade()  # Применяем
 
-
-    def update(self):
+    def update(self, game_paused):  # Принимаем game_paused как аргумент
+        if game_paused:  # Проверяем, находится ли игра на паузе
+            return  # Если да, то выходим из метода
         if self._bot:
             self._AI()
         self._dx = self._vx * self._speed
@@ -426,21 +428,20 @@ class Tank(Unit):
             self._level_up_display_time -= 1
             if self._level_up_display_time == 0:
                 self.hide_level_up_message()
-        damage = missile_collection.check_missiles_collision(self)  # Получаем урон
+        damage = missile_collection.check_missiles_collision(self)  # Передаем self
         if damage > 0:
             self.damage(damage)
         if self._level_up_display_time > 0:
             self._level_up_display_time -= 1
             return
-        if self._has_regen:  # Если у нас есть регенерация
-            self._regen_timer += world.get_dt() # Увеличиваем таймер на время, прошедшее с последнего кадра
-            if self._regen_timer >= self._regen_cooldown:  # Если таймер превысил кулдаун
-                self._regen_timer = 0  # Сбрасываем таймер
-                if self._hp < self._max_hp:  # Если здоровье неполное
-                    self._hp = min(self._hp + 10, self._max_hp)  # Восстанавливаем 10 HP, но не больше максимума
-                    print("Регенерация! HP:", self._hp) # Выводим сообщение о регенерации
-                    self._update_hp_bar()  # Обновляем полоску здоровья
-
+        if self._has_regen:
+            self._regen_timer += 1  # Увеличиваем таймер на 1 каждый кадр (или на другое фиксированное значение)
+            if self._regen_timer >= self._regen_cooldown / 1000:  # Если таймер превысил кулдаун
+                self._regen_timer = 0
+                if self._hp < self._max_hp:
+                    self._hp = min(self._hp + 0.5, self._max_hp)
+                    print("Регенерация! HP:", self._hp)
+                    self._update_hp_bar()
     def _update_xp_bar(self):
         if self._xp_bar_id is not None:
             x = world.SCREEN_WIDTH // 2 - 600 // 2
@@ -472,7 +473,7 @@ class Tank(Unit):
         while self._xp >= self._xp_to_level_up:
             self.level_up()
             self._xp -= self._xp_to_level_up
-            self._xp_to_level_up = int(self._xp_to_level_up * 3)
+            self._xp_to_level_up = int(self._xp_to_level_up * 1.8)
         self._update_xp_bar()
 
     def level_up(self):
