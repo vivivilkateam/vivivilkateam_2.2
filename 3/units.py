@@ -268,7 +268,7 @@ class Tank(Unit):
         self._xp = 0
         self._xp_to_level_up = 100
         self._level = 1
-        self._tank_destroy = 'tank_destroy'
+        self._tank_destroy = 'monster'
         self._max_ammo = 10
         self._ammo = self._max_ammo
         self._max_fuel = 100
@@ -279,10 +279,10 @@ class Tank(Unit):
         self._has_regen = False # Есть ли регенерация
         # Инициализация изображений
         if bot:
-            self._forward_image = 'tank_up'
-            self._backward_image = 'tank_down'
-            self._left_image = 'tank_left'
-            self._right_image = 'tank_right'
+            self._forward_image = 'monster'
+            self._backward_image = 'monster'
+            self._left_image = 'monster'
+            self._right_image = 'monster'
         else:
             self._forward_image = 'player'
             self._backward_image = 'player'

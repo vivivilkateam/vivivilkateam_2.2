@@ -102,7 +102,7 @@ def show_shop_menu(total_fives):
     # Создаем черный прямоугольник для фона меню
     menu_rect_id = canv.create_rectangle(
         x, y, x + rect_width, y + rect_height,
-        fill="black", outline="white", width=3
+        fill="blue", outline="white", width=3
     )
 
     # Текст "Магазин"
@@ -110,7 +110,7 @@ def show_shop_menu(total_fives):
         world.SCREEN_WIDTH // 2, y + 50,
         text="Магазин",
         font=("Arial", 24),
-        fill="white"
+        fill="blue"
     )
     fives_text = canv.create_text(
         world.SCREEN_WIDTH // 2, y + 100,
@@ -142,7 +142,7 @@ def show_main_menu():
     # Заголовок
     title_text = canv.create_text(
         world.SCREEN_WIDTH // 2, 100,
-        text="Танчики",
+        text="Dark school Roguelike",
         font=("Arial", 32),
         fill="black"
     )
@@ -334,6 +334,7 @@ def load_textures():
                   '../img/tank_right_player.png')
     texture.load('player',
                   '../Dark_school/player.png')
+    texture.load('monster', '../img/monster.png')
 
     texture.load(world.BRICK, '../img/brick.png')
     texture.load(world.WATER, '../img/water.png')
@@ -372,7 +373,7 @@ def load_textures():
 
 
 w = Tk()
-w.title('Танки на минималках 2.0')
+w.title('Dark school Roguelike')
 w.geometry(f"{world.SCREEN_WIDTH}x{world.SCREEN_HEIGHT}")
 
 
@@ -383,16 +384,8 @@ canv = Canvas(w, width=world.SCREEN_WIDTH, height=world.SCREEN_HEIGHT, bg='gray2
 
 
 canv.pack()
-#world.initialize(canv)
-#tank_collection.initialize(canv,w)
-#main.py
-
-#missile_collection.initialize(canv)
-
-
 
 w.bind("<p>", toggle_pause) #или любую другую клавишу
-#update()
 
 
 # Привязка клавиш
