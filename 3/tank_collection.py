@@ -17,7 +17,7 @@ _upgrade_window = None
 _tanks = []
 _canvas = None
 id_screen_text = 0
-enemy_colvo = 150
+enemy_colvo = 5
 
 enemy = None
 

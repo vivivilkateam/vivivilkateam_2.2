@@ -116,7 +116,7 @@ def initialize(canv):
     global _canvas
     _canvas = canv
 
-    create_map(150, 150)
+    create_map(10, 10)
 
     # load_map('../map/1.tmap')
     # load_map('../map/2.tmap')
